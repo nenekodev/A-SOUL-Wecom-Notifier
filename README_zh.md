@@ -58,7 +58,7 @@ https://github.com/nenekodev/asoul-wecom-notifier/blob/master/.github/workflows/
 
 https://github.com/nenekodev/asoul-wecom-notifier/blob/master/.github/workflows/A-SOUL_BOT-RunOnce.yml
 
-- 注意：Github Action 自带之 cron schedule 功能**恐不能准时启动**。 你可以参照这篇文章来解决：https://zhuanlan.zhihu.com/p/379365305
+- 注意：Github Action 自带之 cron schedule 功能**恐不能准时启动**。 你可以参照这篇文章来解决：https://zhuanlan.zhihu.com/p/379365305 或试试我的另一个项目：[Github-Actions-Trigger](https://github.com/nenekodev/Github-Actions-Trigger)
 
 ## 配置
 

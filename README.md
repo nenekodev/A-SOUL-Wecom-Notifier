@@ -58,7 +58,7 @@ If you don't want to see this warning, you can set it up as a single run by usin
 
 https://github.com/nenekodev/asoul-wecom-notifier/blob/master/.github/workflows/A-SOUL_BOT-RunOnce.yml
 
-- UPDATE: cron schedule **may not start on time.** A solution here: [zh-SC] https://zhuanlan.zhihu.com/p/379365305
+- UPDATE: cron schedule **may not start on time.** A solution here: [zh-SC] https://zhuanlan.zhihu.com/p/379365305 or you can try my another project: [Github-Actions-Trigger](https://github.com/nenekodev/Github-Actions-Trigger)
 
 
 ## Configurations

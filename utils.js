@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-
 import { formatDistanceToNowStrict } from 'date-fns';
 
 export function timeAgo(timestamp, suffix = true) {
