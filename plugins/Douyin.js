@@ -6,13 +6,13 @@ import sendWecom from './Wecom.js';
 
 const { JSDOM } = jsdom;
 
-async function dyExtract(url, options = {}) {
+export async function dyExtract(url, options = {}) {
   const parsedUrl = new URL(url);
 
   const mobileUserAgent = options?.mobileUserAgent || 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1';
   const desktopUserAgent = options?.desktopUserAgent || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36';
   const requestOptions = options?.requestOptions || {};
-  const cookieOptions = options?.cookies || '';
+  const cookieOptions = options?.customCookies.douyin || '';
 
   try {
     // Douyin videos need desktop UA to work:
@@ -34,9 +34,8 @@ async function dyExtract(url, options = {}) {
       ...requestOptions
     });
 
-    const el_target = '#RENDER_DATA';
     const dom = new JSDOM(resp.body);
-    const renderedData = dom.window.document.querySelector(el_target);
+    const renderedData = dom.window.document.querySelector('#RENDER_DATA');
     const renderedLiveData = dom.window.document.querySelectorAll('script');
 
     // If Douyin main site
@@ -68,7 +67,7 @@ async function dyExtract(url, options = {}) {
 }
 
 // Fetch Douyin live
-export async function fetchDouyinLive (account, config, dbScope, proxyOptions, textBody){
+export async function fetchDouyinLive (account, config, dbScope, textBody){
   const msgPrefix = account.showSlug ? `${account.slug}` : ``;
 
   const userOptions = {
@@ -77,8 +76,7 @@ export async function fetchDouyinLive (account, config, dbScope, proxyOptions, t
   };
 
   account.douyinLiveId && await dyExtract(`https://live.douyin.com/${account.douyinLiveId}`, {
-    ...config.pluginOptions,
-    ...`cookies: ${config.pluginOptions.customCookies.douyin}`
+    ...config.pluginOptions
   }).then(async resp => {
     const json = resp?.initialState?.roomStore?.roomInfo;
 
@@ -88,8 +86,7 @@ export async function fetchDouyinLive (account, config, dbScope, proxyOptions, t
 
       if (status === 2) {
         await dyExtract(`https://webcast.amemv.com/webcast/reflow/${id_str}`, {
-          ...config.pluginOptions,
-          ...cookieOnDemand(config.pluginOptions.customCookies.douyin)
+          ...config.pluginOptions
         }).then(async resp => {
           const currentTime = Date.now();
           const json = resp?.['/webcast/reflow/:id'];
@@ -175,7 +172,7 @@ export async function fetchDouyinLive (account, config, dbScope, proxyOptions, t
             isWecomSent: false,
           },
         }
-        log(account, `douyin-live not started yet`, 'error');
+        log(account, `douyin-live not started yet`);
         dbScope['douyin_live'] = dbStore;
       }
     } else {
@@ -187,7 +184,7 @@ export async function fetchDouyinLive (account, config, dbScope, proxyOptions, t
 }
 
 // Fetch Douyin
-export async function fetchDouyin (account, config, dbScope, proxyOptions, textBody){
+export async function fetchDouyin (account, config, dbScope, textBody){
   const msgPrefix = account.showSlug ? `${account.slug}` : ``;
 
   const userOptions = {
@@ -196,8 +193,7 @@ export async function fetchDouyin (account, config, dbScope, proxyOptions, textB
   };
 
   account.douyinId && await dyExtract(`https://www.douyin.com/user/${account.douyinId}`, {
-    ...config.pluginOptions,
-    ...`cookies: ${config.pluginOptions.customCookies.douyin}`
+    ...config.pluginOptions
   }).then(async resp => {
     const currentTime = Date.now();
 

@@ -18,7 +18,7 @@ import { FormData } from 'formdata-node';
 import { formatDate, stripHtml, convertWeiboUrl } from './utils.js';
 
 import { fetchBiliBio, fetchBiliBlog } from './plugins/Bili.js';
-import { fetchDouyinLive, fetchDouyin } from './plugins/Douyin.js';
+import { fetchDouyinLive, fetchDouyin, dyExtract } from './plugins/Douyin.js';
 
 const argv = yargs(hideBin(process.argv))
   .command('run', 'Extract new posts from services', {
@@ -90,6 +90,11 @@ function headerOnDemand(cookie) {
   }
 }
 
+function cookieOnDemand(cookie) {
+  return {
+    cookies: cookie
+  }
+}
 
 
 
@@ -137,10 +142,14 @@ async function main(config) {
         }
       };
 
-      // await fetchBiliBio(account, config, dbScope, proxyOptions, wecomBody);
-      // await fetchBiliBlog(account, config, dbScope, proxyOptions, wecomBody);
-      await fetchDouyinLive(account, config, dbScope, proxyOptions, wecomBody);
-      await fetchDouyin(account, config, dbScope, proxyOptions, wecomBody);
+      // Fetch bilibili bio and live
+      await fetchBiliBio(account, config, dbScope, proxyOptions, wecomBody);
+      // Fetch bilibili microblog (dynamics)
+      await fetchBiliBlog(account, config, dbScope, proxyOptions, wecomBody);
+      // Fetch Douyin live
+      await fetchDouyinLive(account, config, dbScope, wecomBody);
+      // Fetch Douyin
+      await fetchDouyin(account, config, dbScope, wecomBody);
 
       
       // // Fetch Douyin live
@@ -207,34 +216,34 @@ async function main(config) {
       //           };
 
       //           if (json?.room?.status === 2) {
-      //             log(`douyin-live started: ${title} (${timeAgo(timestamp)})`);
+      //             console.log(`douyin-live started: ${title} (${timeAgo(timestamp)})`);
 
       //             wecomBody.textcard.title = `${msgPrefix}· 抖音开播：${title}`;
       //             wecomBody.textcard.description = `你关注的 ${msgPrefix}开播了，去看看叭：https://live.douyin.com/${account.douyinLiveId}`;
       //             wecomBody.textcard.url = `https://live.douyin.com/${account.douyinLiveId}`;
 
       //             if (dbScope?.douyin_live?.latestStream?.isWecomSent) {
-      //               log(`douyin-live notification sent, skipping...`);
+      //               console.log(`douyin-live notification sent, skipping...`);
       //             } else if ((currentTime - timestamp) >= config.douyinLiveBotThrottle) {
-      //               log(`douyin-live too old, notifications skipped`);
+      //               console.log(`douyin-live too old, notifications skipped`);
       //             } else {                    
       //               await sendWecom({}, wecomBody)
       //               .then(resp => {
       //                 dbStore.latestStream.isWecomSent = true;
       //               })
       //               .catch(err => {
-      //                 log(`Wecom post douyin-live error: ${err?.response?.body || err}`);
+      //                 console.log(`Wecom post douyin-live error: ${err?.response?.body || err}`);
       //               });  
       //             }
       //           } else {
-      //             log(`douyin-live not started yet (2nd check)`);
+      //             console.log(`douyin-live not started yet (2nd check)`);
       //             dbStore.latestStream.isWecomSent = false;
       //           }
 
       //           // Set new data to database
       //           dbScope['douyin_live'] = dbStore;
       //         } else {
-      //           log(`douyin-live stream info corrupted, skipping...`);
+      //           console.log(`douyin-live stream info corrupted, skipping...`);
       //         }
       //       });
       //     } else {
@@ -245,11 +254,11 @@ async function main(config) {
       //           isWecomSent: false,
       //         },
       //       }
-      //       log(`douyin-live not started yet`);
+      //       console.log(`douyin-live not started yet`);
       //       dbScope['douyin_live'] = dbStore;
       //     }
       //   } else {
-      //     log(`douyin-live info corrupted, skipping...`);
+      //     console.log(`douyin-live info corrupted, skipping...`);
       //   }
       // }).catch(err => {
       //   console.log(err);
@@ -335,26 +344,26 @@ async function main(config) {
 
       //       // Check if this is a new post compared to last scrap
       //       if (id !== dbScope?.douyin?.latestPost?.id && timestamp > dbScope?.douyin?.latestPost?.timestampUnix) {
-      //         log(`douyin got update: ${id} (${timeAgo(timestamp)}) ${title}`);
+      //         console.log(`douyin got update: ${id} (${timeAgo(timestamp)}) ${title}`);
 
       //         // Send bot message
       //         if ((currentTime - timestamp) >= config.douyinBotThrottle) {
-      //           log(`douyin latest post too old, notifications skipped`);
+      //           console.log(`douyin latest post too old, notifications skipped`);
       //         } else {
       //           await sendWecom({}, wecomBody)
       //           .catch(err => {
-      //             log(`Wecom post douyin-live error: ${err?.response?.body || err}`);
+      //             console.log(`Wecom post douyin-live error: ${err?.response?.body || err}`);
       //           });
       //         }
       //       } else {
-      //         log(`douyin no update. latest: ${id} (${timeAgo(timestamp)})`);
+      //         console.log(`douyin no update. latest: ${id} (${timeAgo(timestamp)})`);
       //       }
 
       //       // Set new data to database
       //       dbScope['douyin'] = dbStore;
       //     }
       //   } else {
-      //     log(`douyin scraped data corrupted, skipping...`);
+      //     console.log(`douyin scraped data corrupted, skipping...`);
       //   }
       // }).catch(err => {
       //   console.log(err);
