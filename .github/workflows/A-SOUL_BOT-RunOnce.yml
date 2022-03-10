@@ -46,7 +46,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: ./master/package-lock.json
+        cache-dependency-path: ./main/package-lock.json
       
     - name: Start service
       run: |
