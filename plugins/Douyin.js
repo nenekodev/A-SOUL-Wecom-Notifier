@@ -6,7 +6,7 @@ import sendWecom from './Wecom.js';
 
 const { JSDOM } = jsdom;
 
-export async function dyExtract(url, options = {}) {
+async function dyExtract(url, options = {}) {
   const parsedUrl = new URL(url);
 
   const mobileUserAgent = options?.mobileUserAgent || 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1';

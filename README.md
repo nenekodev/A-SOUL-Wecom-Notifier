@@ -1,6 +1,6 @@
 # A-SOUL-Wecom
 
-Extract data from services and push updates to Wecom【企业微信】
+Extract A-SOUL dynamics data from services and push updates to Wecom【企业微信】
 
 A fork of https://github.com/sparanoid/a-soul
 
@@ -10,6 +10,7 @@ author: [sparanoid](https://github.com/sparanoid/)
 
 ## Features
 
+- Modular components
 - Monitor several services at the same time
 - Support retry on failed connections
 - Proxy support to avoid API rate limit
