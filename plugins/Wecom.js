@@ -14,17 +14,14 @@ function getToken(corpID, secret) {
   })
 }
 
-async function send(userOptions = {}, userBody = {}) {
+export async function sendWecom(userOptions = {}, userBody = {}) {
   const options = merge({
     apiBase: `https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=`,
-    corpID: process.env.WECOM_CORPID,
-    secret: process.env.WECOM_SECRET,
   }, userOptions);
 
   access_token = await getToken(`${options.corpID}`, `${options.secret}`);
 
   const body = merge({
-    "agentid": process.env.WECOM_AGENTID,
     "touser": "@all",
     "msgtype": "textcard",
     "enable_id_trans": 0,
@@ -44,4 +41,4 @@ async function send(userOptions = {}, userBody = {}) {
   }
 }
 
-export default send;
+export default sendWecom;
