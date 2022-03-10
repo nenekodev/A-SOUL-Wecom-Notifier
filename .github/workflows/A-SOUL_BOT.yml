@@ -1,0 +1,52 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: A-SOUL_BOT
+
+on:
+  workflow_dispatch:
+#  cron schedule may not start on time. A solution here: [zh-SC] https://zhuanlan.zhihu.com/p/379365305
+#  schedule:
+#  - cron: "37 0-23/6 * * *"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        
+    env:
+      BILI_COOKIE: ${{ secrets.BILI_COOKIE }}
+      DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
+      WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
+      WECOM_AGENTID: ${{ secrets.WECOM_AGENTID }}
+      WECOM_CORPID: ${{ secrets.WECOM_CORPID }}
+      WECOM_SECRET: ${{ secrets.WECOM_SECRET }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Init repo
+      run: npm install
+    - name: Start service
+      run: node ./ run -c config_template.js
+    
+    - name: Commit and Push changes
+      run: | 
+        git config user.name github-actions[bot]
+        git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+        git config --global merge.ours.driver true
+        echo './db/db.json merge=ours' >> .gitattributes
+        git fetch --unshallow origin
+        git add -f ./db
+        git merge master
+        git commit -m "Automatically update db by Github Action"
+        git push -f
