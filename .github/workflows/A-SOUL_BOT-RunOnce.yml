@@ -28,8 +28,8 @@ jobs:
     - name: Fetch Code
       uses: actions/checkout@v3
       with:
-        ref: master
-        path: master
+        ref: main
+        path: main
         
     - name: Fetch database
       uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
   
     - name: Copy database to work dir
       run: | 
-        cp -r -f ./database/db/. ./master/db
+        cp -r -f ./database/db/. ./main/db
         
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
@@ -50,13 +50,13 @@ jobs:
       
     - name: Start service
       run: |
-        cd ./master
+        cd ./main
         npm install
         node ./ run --once -c config_template.js
       
     - name: Copy database back to database dir
       run: | 
-        cp -r -f ./master/db/. ./database/db
+        cp -r -f ./main/db/. ./database/db
        
     - name: Commit and Push changes
       run: | 
