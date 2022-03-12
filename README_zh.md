@@ -6,7 +6,7 @@
 
 原作: [sparanoid](https://github.com/sparanoid)
 
-[English](https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/README.md)
+[English](https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/main/README.md)
 
 ## 功能
 
@@ -50,11 +50,11 @@ npm start
 
 你可以尝试像我这样设置你的 `action.yml` ：
 
-https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/.github/workflows/A-SOUL_BOT.yml
+https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/main/.github/workflows/A-SOUL_BOT.yml
 
 如果你不想看到运行失败的消息，可以将其设置成单次运行 `node ./ run --once -c config_template.js` ，并使用外部的触发器按你所需要的间隔（如每分钟）触发一次即可：
 
-https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/.github/workflows/A-SOUL_BOT-RunOnce.yml
+https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/main/.github/workflows/A-SOUL_BOT-RunOnce.yml
 
 - 注意：Github Action 自带之 cron schedule 功能**恐不能准时启动**。 你可以参照这篇文章来解决：https://zhuanlan.zhihu.com/p/379365305 或试试我的另一个项目：[Github-Actions-Trigger](https://github.com/nenekodev/Github-Actions-Trigger)
 
