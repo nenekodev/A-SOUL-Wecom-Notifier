@@ -6,7 +6,7 @@ A fork of https://github.com/sparanoid/a-soul
 
 author: [sparanoid](https://github.com/sparanoid/)
 
-[中文](https://github.com/nenekodev/asoul-wecom-notifier/blob/master/README_zh.md)
+[中文](https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/README_zh.md)
 
 ## Features
 
@@ -50,11 +50,11 @@ Because the main thread is a loop, Github will forcibly terminate the task six h
 
 you can set your own `action.yml` by referring my settings:
 
-https://github.com/nenekodev/asoul-wecom-notifier/blob/master/.github/workflows/A-SOUL_BOT.yml
+https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/.github/workflows/A-SOUL_BOT.yml
 
 If you don't want to see this warning, you can set it up as a single run by using `node ./ run --once -c config_template.js` and use an external trigger to fire it as often as you need (such as every minute):
 
-https://github.com/nenekodev/asoul-wecom-notifier/blob/master/.github/workflows/A-SOUL_BOT-RunOnce.yml
+https://github.com/nenekodev/A-SOUL-Wecom-Notifier/blob/master/.github/workflows/A-SOUL_BOT-RunOnce.yml
 
 - UPDATE: cron schedule **may not start on time.** A solution here: [zh-SC] https://zhuanlan.zhihu.com/p/379365305 or you can try my another project: [Github-Actions-Trigger](https://github.com/nenekodev/Github-Actions-Trigger)
 
