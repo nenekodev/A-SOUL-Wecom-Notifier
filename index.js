@@ -1,24 +1,32 @@
 #!/usr/bin/env node
 
-// Author: sparanoid(https://github.com/sparanoid)
-// Modified by nenekodev(https://github.com/nenekodev)
+/*
+Author: sparanoid(https://github.com/sparanoid)
+Modified by nenekodev(https://github.com/nenekodev)
+
+latest Update: 2022.3.12 0:19
+
+The following changes has been made:
+- Modularize each component and separate them from the main function
+- Remove the verbose and JSON dump arguments
+- Support process.env
+- Support Github Actions
+*/
+
 import fs from 'fs';
 import path from 'path';
-import { setTimeout } from 'timers/promises';
-import { setIntervalAsync } from 'set-interval-async/fixed/index.js';
-
 import got from 'got';
 import merge from 'deepmerge';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { Low, JSONFile } from 'lowdb';
-import { HttpsProxyAgent } from 'hpagent';
-import { FormData } from 'formdata-node';
-
-import { formatDate, stripHtml, convertWeiboUrl } from './utils.js';
+import { setTimeout } from 'timers/promises';
+import { setIntervalAsync } from 'set-interval-async/fixed/index.js';
+import { formatDate } from './utils.js';
 
 import { fetchBiliBio, fetchBiliBlog } from './plugins/Bili.js';
 import { fetchDouyinLive, fetchDouyin } from './plugins/Douyin.js';
+import { fetchWeibo } from './plugins/Weibo.js';
 
 const argv = yargs(hideBin(process.argv))
   .command('run', 'Extract new posts from services', {
@@ -55,12 +63,8 @@ async function generateConfig() {
         }
       },
       customCookies: {
-        // Nov 11, 2021
-        // Douyin main site now require `__ac_nonce` and `__ac_signature` to work
         douyin: process.env.DOUYIN_COOKIE,
-        // get `SESSDATA` cookie from https://www.bilibili.com/
         bilibili: process.env.BILI_COOKIE,
-        // get `SUB` cookie from https://m.weibo.cn/
         weibo: process.env.WEIBO_COOKIE,
       }
     },    
@@ -77,18 +81,6 @@ async function generateConfig() {
 
 // Merge default configs and user configs
 const config = await generateConfig();
-
-// Used by extractor-douyin
-
-
-// Used by got directly
-function headerOnDemand(cookie) {
-  return {
-    headers: {
-      Cookie: cookie
-    }
-  }
-}
 
 async function main(config) {
   // Initial database
@@ -111,22 +103,9 @@ async function main(config) {
       db.data[account.slug] ||= {};
       const dbScope = db.data[account.slug];
 
-      // Initialize proxy randomly to avoid bilibili rate limit
-      // .5 - 50% true
-      const proxyOptions = config?.rateLimitProxy && Math.random() < .5 ? {
-        agent: {
-          https: new HttpsProxyAgent({
-            keepAlive: false,
-            keepAliveMsecs: 1000,
-            maxSockets: 256,
-            maxFreeSockets: 256,
-            scheduling: 'lifo',
-            proxy: config.rateLimitProxy
-          })
-        }
-      } : {};
+      
 
-      const wecomBody = {
+      const textBody = {
         "textcard": {
           "title": "",
           "description": "",
@@ -135,16 +114,15 @@ async function main(config) {
       };
 
       // Fetch bilibili bio and live
-      await fetchBiliBio(account, config, dbScope, proxyOptions, wecomBody);
+      await fetchBiliBio(account, config, dbScope, textBody);
       // Fetch bilibili microblog (dynamics)
-      await fetchBiliBlog(account, config, dbScope, proxyOptions, wecomBody);
+      await fetchBiliBlog(account, config, dbScope, textBody);
       // Fetch Douyin live
-      await fetchDouyinLive(account, config, dbScope, wecomBody);
+      await fetchDouyinLive(account, config, dbScope, textBody);
       // Fetch Douyin
-      await fetchDouyin(account, config, dbScope, wecomBody);
-
-      // //Fetch Weibo
-      // 
+      await fetchDouyin(account, config, dbScope, textBody);
+      //Fetch Weibo
+      await fetchWeibo(account, config, dbScope, textBody);
 
 
       // Write new data to database

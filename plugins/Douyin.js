@@ -1,3 +1,18 @@
+/*
+Author: sparanoid(https://github.com/sparanoid)
+Modified by nenekodev(https://github.com/nenekodev)
+
+latest Update: 2022.3.10 23:41
+
+The following changes has been made:
+- Merge features in Utils.js
+- Remove the verbose and JSON dump arguments
+- Remove image and video parse
+- Separate the function for Douyin fetching
+- Add sendWecom function
+- Improve the log function
+*/
+
 import got from 'got';
 import merge from 'deepmerge';
 import jsdom from 'jsdom';

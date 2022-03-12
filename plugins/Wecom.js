@@ -1,3 +1,9 @@
+/*
+Author: nenekodev(https://github.com/nenekodev)\
+
+latest Update: 2022.3.10 21:57
+*/
+
 import got from 'got';
 import fetch from 'node-fetch';
 import merge from 'deepmerge';

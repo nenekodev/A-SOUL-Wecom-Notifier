@@ -23,7 +23,7 @@ author: [sparanoid](https://github.com/sparanoid/)
 - [x] bilibili-live
 - [x] douyin
 - [x] douyin-live
-- [ ] weibo
+- [x] weibo
 
 ## Supported Senders
 
@@ -35,8 +35,6 @@ author: [sparanoid](https://github.com/sparanoid/)
 - Node.js >= 16
 
 ## Usage
-
-> `./db` is a folder to storage dynamics. This is because I'm running the Github Action right now, the service uses this repository as a temporary storage. The contents inside may be out of date. To prevent any data conflicts, make sure you have deleted it before start the service.
 
 Make your own `config.js` file by following the instructions below or using the `config_template.js`, which should be located in root directory. And then
 

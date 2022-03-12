@@ -1,16 +1,47 @@
+/*
+Author: sparanoid(https://github.com/sparanoid)
+Modified by nenekodev(https://github.com/nenekodev)
+
+latest Update: 2022.3.12 0:24
+
+The following changes has been made:
+- Merge features in Utils.js
+- Remove the verbose and JSON dump arguments
+- Remove image and video parse
+- Separate the function for BiliBili fetching
+- Add sendWecom function
+- Improve the log function
+*/
+
 import got from 'got';
 import merge from 'deepmerge';
+import { HttpsProxyAgent } from 'hpagent';
 import { log, timeAgo } from '../utils.js'
 import sendWecom from './Wecom.js';
 
 // Fetch bilibili bio and live
-export async function fetchBiliBio (account, config, dbScope, proxyOptions, textBody){
+export async function fetchBiliBio (account, config, dbScope, textBody){
   const msgPrefix = account.showSlug ? `${account.slug}` : ``;
 
   const userOptions = {
     corpID: config.wecom.corpID,
     secret: config.wecom.secret,
   };
+
+  // Initialize proxy randomly to avoid bilibili rate limit
+  // .5 - 50% true
+  const proxyOptions = config?.rateLimitProxy && Math.random() < .5 ? {
+    agent: {
+      https: new HttpsProxyAgent({
+        keepAlive: false,
+        keepAliveMsecs: 1000,
+        maxSockets: 256,
+        maxFreeSockets: 256,
+        scheduling: 'lifo',
+        proxy: config.rateLimitProxy
+      })
+    }
+  } : {};
 
   account.biliId && await got(`https://api.bilibili.com/x/space/acc/info?mid=${account.biliId}`, {
     ...config.pluginOptions?.requestOptions,
@@ -169,13 +200,28 @@ export async function fetchBiliBio (account, config, dbScope, proxyOptions, text
 }
 
 // Fetch bilibili microblog (dynamics)
-export async function fetchBiliBlog (account, config, dbScope, proxyOptions, textBody){
+export async function fetchBiliBlog (account, config, dbScope, textBody){
   const msgPrefix = account.showSlug ? `${account.slug}` : ``;
 
   const userOptions = {
     corpID: config.wecom.corpID,
     secret: config.wecom.secret,
   };
+
+  // Initialize proxy randomly to avoid bilibili rate limit
+  // .5 - 50% true
+  const proxyOptions = config?.rateLimitProxy && Math.random() < .5 ? {
+    agent: {
+      https: new HttpsProxyAgent({
+        keepAlive: false,
+        keepAliveMsecs: 1000,
+        maxSockets: 256,
+        maxFreeSockets: 256,
+        scheduling: 'lifo',
+        proxy: config.rateLimitProxy
+      })
+    }
+  } : {};
 
   account.biliId && await got(`https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=${account.biliId}&offset_dynamic_id=0&need_top=0&platform=web`, {
     ...config.pluginOptions?.requestOptions,
