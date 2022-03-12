@@ -43,6 +43,13 @@ function headerOnDemand(cookie) {
 
 // Fetch Weibo
 export async function fetchWeibo (account, config, dbScope, textBody){
+  const msgPrefix = account.showSlug ? `${account.slug}` : ``;
+
+  const userOptions = {
+    corpID: config.wecom.corpID,
+    secret: config.wecom.secret,
+  };
+
   const weiboRequestOptions = {
     ...config.pluginOptions?.requestOptions,
     ...headerOnDemand(config.pluginOptions.customCookies.weibo)
@@ -169,7 +176,7 @@ export async function fetchWeibo (account, config, dbScope, textBody){
         }
 
         if (readyToSend === 1) {
-          await sendWecom({}, textBody)
+          await sendWecom(userOptions, merge({agentid: config.wecom.agentid,}, textBody))
           .then(resp => {
             readyToSend = 0;
           })

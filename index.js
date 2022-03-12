@@ -103,8 +103,6 @@ async function main(config) {
       db.data[account.slug] ||= {};
       const dbScope = db.data[account.slug];
 
-      
-
       const textBody = {
         "textcard": {
           "title": "",
