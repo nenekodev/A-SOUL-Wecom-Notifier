@@ -1,16 +1,13 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: A-SOUL_BOT
+name: A-SOUL_BOT-RunOnce
 
 on:
   workflow_dispatch:
-#  cron schedule may not start on time. A solution here: [zh-SC] https://zhuanlan.zhihu.com/p/379365305
-#  schedule:
-#  - cron: "37 0-23/6 * * *"
 
 jobs:
-  build:
+  Run-Bot:
 
     runs-on: ubuntu-latest
 
@@ -28,25 +25,51 @@ jobs:
       WECOM_SECRET: ${{ secrets.WECOM_SECRET }}
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Fetch Code
+      uses: actions/checkout@v3
+      with:
+        ref: main
+        path: main
+        
+    - name: Fetch database
+      uses: actions/checkout@v3
+      with:
+        ref: database
+        path: database
+  
+    - name: Copy database to work dir
+      run: | 
+        cp -r -f ./database/db/. ./main/db
+        
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: Init repo
-      run: npm install
+        cache-dependency-path: ./main/package-lock.json
+      
     - name: Start service
-      run: node ./ run -c config_template.js
-    
+      run: |
+        cd ./main
+        npm install
+        node ./ run -c config_template.js
+      
+    - name: Copy database back to database dir
+      run: | 
+        cp -r -f ./main/db/. ./database/db
+       
     - name: Commit and Push changes
       run: | 
-        git config user.name github-actions[bot]
-        git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+        cd ./database
+        git config --global user.name github-actions[bot]
+        git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
         git config --global merge.ours.driver true
         echo './db/db.json merge=ours' >> .gitattributes
-        git fetch --unshallow origin
-        git add -f ./db
-        git merge master
+        ls
+        git add ./db/.
+        git merge database
+        git status
         git commit -m "Automatically update db by Github Action"
-        git push -f
+        git push origin database -f
+
+    
