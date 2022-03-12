@@ -45,7 +45,7 @@ function headerOnDemand(cookie) {
 export async function fetchWeibo (account, config, dbScope, textBody){
   const weiboRequestOptions = {
     ...config.pluginOptions?.requestOptions,
-    ...`headers: { Cookie: ${config.pluginOptions.customCookies.weibo} }`
+    ...headerOnDemand(config.pluginOptions.customCookies.weibo)
   };
 
   account.weiboId && await got(`https://m.weibo.cn/profile/info?uid=${account.weiboId}`, weiboRequestOptions)
