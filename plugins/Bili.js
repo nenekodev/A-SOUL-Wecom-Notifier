@@ -130,7 +130,7 @@ export async function fetchBiliBio (account, config, dbScope, textBody){
 
       // 1: live
       // 0: not live
-      if (room?.liveStatus === 1) {
+      if (account.biliLiveId && room?.liveStatus === 1 ) {
 
         // Deprecated v1 API, may be changed in the future
         await got(`https://api.live.bilibili.com/room/v1/Room/room_init?id=${liveId}`, {
