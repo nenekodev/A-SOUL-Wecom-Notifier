@@ -306,7 +306,7 @@ export async function fetchBiliBlog (account, config, dbScope, textBody){
 
           // Gallery post (text post with images)
           else if (type === 2 && cardJson?.item?.pictures.length > 0) {
-            textBody.textcard.title = `${msgPrefix} · 更新B站相册`;
+            textBody.textcard.title = `${msgPrefix} · 发布B站动态`;
             textBody.textcard.description = `${cardJson?.item?.description}${extendedMeta}\n\n动态链接：https://t.bilibili.com/${dynamicId}`;
             textBody.textcard.url = `https://t.bilibili.com/${dynamicId}`;
 
@@ -315,7 +315,7 @@ export async function fetchBiliBlog (account, config, dbScope, textBody){
 
           // Text post
           else if (type === 4) {
-            textBody.textcard.title = `${msgPrefix} · 更新B站动态`;
+            textBody.textcard.title = `${msgPrefix} · 发布B站动态`;
             textBody.textcard.description = `${cardJson?.item?.content.trim()}${extendedMeta}`;
             textBody.textcard.url = `https://t.bilibili.com/${dynamicId}`;
 
@@ -355,7 +355,7 @@ export async function fetchBiliBlog (account, config, dbScope, textBody){
           // General card link (calendar, etc.)
           // Share audio bookmark
           else if (type === 2048) {
-            textBody.textcard.title = `${msgPrefix} · 更新B站动态`;
+            textBody.textcard.title = `${msgPrefix} · 发布B站动态`;
             textBody.textcard.description = `${cardJson?.vest?.content.trim()}\n${extendedMeta}`;
             textBody.textcard.url = `https://t.bilibili.com/${dynamicId}`;
 

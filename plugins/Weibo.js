@@ -113,7 +113,7 @@ export async function fetchWeibo (account, config, dbScope, textBody){
 
         // If user nickname update
         if (user.screen_name !== dbScope?.weibo?.user?.screen_name && dbScope?.weibo?.user?.screen_name) {
-          textBody.textcard.title = `${msgPrefix} · 微博昵称更新`;
+          textBody.textcard.title = `${msgPrefix} · 更新微博昵称`;
           textBody.textcard.description = `新：${user.screen_name}\n旧：${dbScope?.weibo?.user?.screen_name}`;
           textBody.textcard.url = `https://weibo.com/${user.id}`;
 
@@ -124,7 +124,7 @@ export async function fetchWeibo (account, config, dbScope, textBody){
 
         // If user description update
         if (user.description !== dbScope?.weibo?.user?.description && dbScope?.weibo?.user?.description) {
-          textBody.textcard.title = `${msgPrefix} · 微博签名更新`;
+          textBody.textcard.title = `${msgPrefix} · 更新微博签名`;
           textBody.textcard.description = `新：${user.description}\n旧：${dbScope?.weibo?.user?.description}`;
           textBody.textcard.url = `https://weibo.com/${user.id}`;
 
@@ -135,7 +135,7 @@ export async function fetchWeibo (account, config, dbScope, textBody){
 
         // If user avatar update
         if (user.avatar_hd !== dbScope?.weibo?.user?.avatar_hd && dbScope?.weibo?.user?.avatar_hd) {
-          textBody.textcard.title = `${msgPrefix} · 微博头像更新`;
+          textBody.textcard.title = `${msgPrefix} · 更新微博头像`;
           textBody.textcard.description = `旧：${dbScope?.weibo?.user?.avatar_hd}\n点击卡片查看`;
           textBody.textcard.url = `${dbScope?.weibo?.user?.avatar_hd}`;
 
@@ -146,7 +146,7 @@ export async function fetchWeibo (account, config, dbScope, textBody){
 
         // If user cover background update
         if (user.cover_image_phone !== dbScope?.weibo?.user?.cover_image_phone && dbScope?.weibo?.user?.cover_image_phone) {
-          textBody.textcard.title = `${msgPrefix} · 微博封面更新`;
+          textBody.textcard.title = `${msgPrefix} · 更新微博封面`;
           textBody.textcard.description = `旧：${dbScope?.weibo?.user?.cover_image_phone}\n点击卡片查看`;
           textBody.textcard.url = `${dbScope?.weibo?.user?.cover_image_phone}`;
 
