@@ -11,7 +11,7 @@ export default {
         request: 3000
       },
     },
-//  If you have defined cookies or wecom_secret and etc. in GitHub secrets DO NOT redifine below.
+//  If you have defined cookies or wecom_secret and etc. in GitHub secrets DO NOT redefine below.
 //     customCookies: {
 //       // Nov 11, 2021
 //       // Douyin main site now require `__ac_nonce` and `__ac_signature` to work as `__ac_nonce=XXX; __ac_signature=XXX;`
