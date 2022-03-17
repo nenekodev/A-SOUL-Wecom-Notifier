@@ -86,12 +86,6 @@ export default {
       douyinLiveId: '1962143378',
       weiboId: '7519401668',
       color: '#fc966e',
-    },
-    {
-      enabled: true,
-      slug: '贾布加布',
-      showSlug: true,
-      biliId: '393396916',
     }
   ]
 }
