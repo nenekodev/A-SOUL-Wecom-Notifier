@@ -2,7 +2,7 @@
 Author: sparanoid(https://github.com/sparanoid)
 Modified by nenekodev(https://github.com/nenekodev)
 
-latest Update: 2022.4.6 13:07
+latest Update: 2022.4.6 19:50
 
 The following changes has been made:
 - Merge features in Utils.js
@@ -78,7 +78,6 @@ export async function fetchWeibo (account, config, dbScope, textBody){
         // This reduces one API request and can be helpful with rate limit
         // at better scale
         const user = statuses[0].mblog.user;
-        console.log(user);
 
         const status = (
           // This is the last resort to get the latest status witht sticky status
