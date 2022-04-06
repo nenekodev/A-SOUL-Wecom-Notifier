@@ -55,169 +55,155 @@ export async function fetchWeibo (account, config, dbScope, textBody){
     ...headerOnDemand(config.pluginOptions.customCookies.weibo)
   };
 
-  account.weiboId && await got(`https://m.weibo.cn/api/container/getIndex?type=uid&value=${account.weiboId}&containerid=100505${account.weiboId}`, weiboRequestOptions)
-  .then(async resp => {
+  // Weibo container ID magic words:
+  // 230283 + uid: home
+  // 100505 + uid: profile
+  // 107603 + uid: weibo
+  // 231567 + uid: videos
+  // 107803 + uid: photos
+  account.weiboId && await got(`https://m.weibo.cn/api/container/getIndex?type=uid&value=${account.weiboId}&containerid=107603${account.weiboId}`, weiboRequestOptions).then(async resp => {
     const json = JSON.parse(resp.body);
 
     if (json?.ok === 1) {
       const currentTime = Date.now();
       const data = json.data;
-      const user = data?.userInfo;
-      const tabs = data?.tabsInfo?.tabs;
+      const cards = data?.cards;
 
-      // NOTE: From Apr 2, 2022, you can not get statuses (now Weibo brands it cards) directly from the old API.
-      // All cards are now wrapped inside a "contaienr". Which can be get from the main user profile API request.
+      // Filter out unrelated cards to only keep statuses
+      // card_type: 9 - normal Weibo statuses
+      const statuses = cards.filter(card => { return card.card_type === 9 });
 
-      if (tabs.length > 0) {
-        const statusTab = tabs.find(tab => tab.tab_type === 'weibo')
-        if (statusTab) {
-          // In case Weibo update their magic words. fetch it from API result
-          const statusContaierId = statusTab.containerid;
-          // Retrieve the real cards (statuses)
-          await got(`https://m.weibo.cn/api/container/getIndex?type=uid&value=${account.weiboId}&containerid=${statusContaierId}`, weiboRequestOptions)
-          .then(async resp => {
+      if (statuses.length !== 0) {
+        // At this point, we can get Weibo profile data from the statuses
+        // This reduces one API request and can be helpful with rate limit
+        // at better scale
+        const user = statuses[0].mblog.user;
+        console.log(user);
+
+        const status = (
+          // This is the last resort to get the latest status witht sticky status
+          (statuses[0]?.mblog?.created_at && statuses[1]?.mblog?.created_at &&
+          +new Date(statuses[0].mblog.created_at) < +new Date(statuses[1].mblog.created_at))
+        ) ? statuses[1].mblog : statuses[0].mblog;
+        const retweeted_status = status?.retweeted_status;
+
+        const timestamp = +new Date(status.created_at);
+        const id = status.bid;
+        const visibility = status?.visible?.type;
+        const editCount = status?.edit_count || 0;
+        let text = status?.raw_text || stripHtml(status.text);
+
+        if (status?.isLongText) {
+          log('weibo got post too long, trying extended text...')
+          await got(`https://m.weibo.cn/statuses/extend?id=${id}`, weiboRequestOptions).then(async resp => {
             const json = JSON.parse(resp.body);
 
-            if (json?.ok === 1) {
-              const data = json.data;
-              const cards = data?.cards;
-              // Filter out unrelated cards to only keep statuses
-              // card_type: 9 - normal Weibo statuses
-              const statuses = cards.filter(card => {
-                return card.card_type === 9
-              });
-
-              if (statuses.length !== 0) {
-                // Exclude first status in the array when:
-                // - It's sticky
-                // - It's not the latest status
-                const status = (
-                  statuses[0].mblog?.isTop === 1 &&
-                  !('lastWeiboCard' in statuses[0])
-                ) ? statuses[1].mblog : statuses[0].mblog;
-                const retweeted_status = status?.retweeted_status;
-
-                const timestamp = +new Date(status.created_at);
-                const id = status.bid;
-                const visibility = status?.visible?.type;
-                const editCount = status?.edit_count || 0;
-                let text = status?.raw_text || stripHtml(status.text);
-
-                if (status?.isLongText) {
-                  log('weibo got post too long, trying extended text...')
-                  await got(`https://m.weibo.cn/statuses/extend?id=${id}`, weiboRequestOptions).then(async resp => {
-                    const json = JSON.parse(resp.body);
-                    if (json?.ok === 1 && json?.data?.longTextContent) {
-                      text = stripHtml(json.data.longTextContent);
-                    } else {
-                      log('weibo extended info corrupted, using original text...');
-                    }
-                  });
-                }
-                
-                const dbStore = {
-                  scrapedTime: new Date(currentTime),
-                  scrapedTimeUnix: +new Date(currentTime),
-                  user: user,
-                  latestStatus: {
-                    id: id,
-                    text: text,
-                    visibility: visibility,
-                    editCount: editCount,
-                    timestamp: new Date(timestamp),
-                    timestampUnix: timestamp,
-                    timeAgo: timeAgo(timestamp),
-                  }
-                };
-
-                let readyToSend = 0;
-
-                // If user nickname update
-                if (user.screen_name !== dbScope?.weibo?.user?.screen_name && dbScope?.weibo?.user?.screen_name) {
-
-                  textBody.textcard.title = `${msgPrefix} · 更新微博昵称`;
-                  textBody.textcard.description = `新：${user.screen_name}\n旧：${dbScope?.weibo?.user?.screen_name}`;
-                  textBody.textcard.url = `https://weibo.com/${user.id}`;
-
-                  readyToSend = 1;
-
-                  log(account, `weibo user nickname updated: ${user.screen_name}`, 'success');
-                }
-                // If user description update
-                if (user.description !== dbScope?.weibo?.user?.description && dbScope?.weibo?.user?.description) {
-                  textBody.textcard.title = `${msgPrefix} · 更新微博签名`;
-                  textBody.textcard.description = `新：${user.description}\n旧：${dbScope?.weibo?.user?.description}`;
-                  textBody.textcard.url = `https://weibo.com/${user.id}`;
-
-                  readyToSend = 1;
-
-                  log(account, `weibo user description updated: ${user.description}`, 'success');
-                }
-                
-                // If user avatar update
-                if (user.avatar_hd !== dbScope?.weibo?.user?.avatar_hd && dbScope?.weibo?.user?.avatar_hd) {
-                  textBody.textcard.title = `${msgPrefix} · 更新微博头像`;
-                  textBody.textcard.description = `旧：${dbScope?.weibo?.user?.avatar_hd}\n点击卡片查看`;
-                  textBody.textcard.url = `${dbScope?.weibo?.user?.avatar_hd}`;
-
-                  readyToSend = 1;
-
-                  log(account, `weibo user avatar updated: ${user.avatar_hd}`, 'success');
-                }
-                // If user cover background update
-                if (user.cover_image_phone !== dbScope?.weibo?.user?.cover_image_phone && dbScope?.weibo?.user?.cover_image_phone) {
-                  textBody.textcard.title = `${msgPrefix} · 更新微博封面`;
-                  textBody.textcard.description = `旧：${dbScope?.weibo?.user?.cover_image_phone}\n点击卡片查看`;
-                  textBody.textcard.url = `${dbScope?.weibo?.user?.cover_image_phone}`;
-
-                  readyToSend = 1;
-
-                  log(account, `weibo user cover updated: ${user.cover_image_phone}`, 'success');
-                }
-                // If latest post is newer than the one in database
-                if (id !== dbScope?.weibo?.latestStatus?.id && timestamp > dbScope?.weibo?.latestStatus?.timestampUnix) {
-                  textBody.textcard.title = `${msgPrefix} · 发布微博动态`;
-                  textBody.textcard.description = `${retweeted_status ? `转发` : `动态`}：${text}${retweeted_status ? `\n\n@${retweeted_status.user.screen_name}：${stripHtml(retweeted_status.text)}` : ''}`;
-                  textBody.textcard.url = `https://weibo.com/${user.id}/${id}`;
-
-                  log(account, `weibo got update: ${id} (${timeAgo(timestamp)})`, 'success');
-
-                  if ((currentTime - timestamp) >= config.weiboBotThrottle) {
-                    log(account, `weibo too old, notifications skipped`);
-                  } else {
-                    readyToSend = 1;
-                  }
-                } else if (id !== dbScope?.weibo?.latestStatus?.id && timestamp < dbScope?.weibo?.latestStatus?.timestampUnix) {
-                  log(account, `weibo new post older than database. latest: ${id} (${timeAgo(timestamp)})`);
-
-                } else {
-                  log(account, `weibo no update. latest: ${id} (${timeAgo(timestamp)})`);
-                }
-
-                if (readyToSend === 1) {
-                  await sendWecom(userOptions, merge({agentid: config.wecom.agentid,}, textBody))
-                  .then(resp => {
-                    readyToSend = 0;
-                  })
-                  .catch(err => {
-                    log(account, `Wecom post error: ${err?.response?.body || err}`, 'error');
-                  });
-                }
-                
-                // Set new data to database
-                dbScope['weibo'] = dbStore;
-              } else {
-                log('weibo empty result, skipping...');
-              }
+            if (json?.ok === 1 && json?.data?.longTextContent) {
+              text = stripHtml(json.data.longTextContent);
+            } else {
+              log('weibo extended info corrupted, using original text...');
             }
           });
         }
+
+        const dbStore = {
+          scrapedTime: new Date(currentTime),
+          scrapedTimeUnix: +new Date(currentTime),
+          user: user,
+          latestStatus: {
+            id: id,
+            text: text,
+            visibility: visibility,
+            editCount: editCount,
+            timestamp: new Date(timestamp),
+            timestampUnix: timestamp,
+            timeAgo: timeAgo(timestamp),
+          }
+        };
+
+        // If user nickname update
+        if (user.screen_name !== dbScope?.weibo?.user?.screen_name && dbScope?.weibo?.user?.screen_name) {
+          textBody.textcard.title = `${msgPrefix} · 更新微博昵称`;
+          textBody.textcard.description = `新：${user.screen_name}\n旧：${dbScope?.weibo?.user?.screen_name}`;
+          textBody.textcard.url = `https://weibo.com/${user.id}`;
+
+          readyToSend = 1;
+
+          log(account, `weibo user nickname updated: ${user.screen_name}`, 'success');
+        }
+
+        // If user description update
+        if (user.description !== dbScope?.weibo?.user?.description && dbScope?.weibo?.user?.description) {
+          textBody.textcard.title = `${msgPrefix} · 更新微博签名`;
+          textBody.textcard.description = `新：${user.description}\n旧：${dbScope?.weibo?.user?.description}`;
+          textBody.textcard.url = `https://weibo.com/${user.id}`;
+
+          readyToSend = 1;
+
+          log(account, `weibo user description updated: ${user.description}`, 'success');
+        }
+
+        // If user avatar update
+        if (user.avatar_hd !== dbScope?.weibo?.user?.avatar_hd && dbScope?.weibo?.user?.avatar_hd) {
+          textBody.textcard.title = `${msgPrefix} · 更新微博头像`;
+          textBody.textcard.description = `旧：${dbScope?.weibo?.user?.avatar_hd}\n点击卡片查看`;
+          textBody.textcard.url = `${dbScope?.weibo?.user?.avatar_hd}`;
+
+          readyToSend = 1;
+
+          log(account, `weibo user avatar updated: ${user.avatar_hd}`, 'success');
+        }
+
+        // If user cover background update
+        if (user.cover_image_phone !== dbScope?.weibo?.user?.cover_image_phone && dbScope?.weibo?.user?.cover_image_phone) {
+          textBody.textcard.title = `${msgPrefix} · 更新微博封面`;
+          textBody.textcard.description = `旧：${dbScope?.weibo?.user?.cover_image_phone}\n点击卡片查看`;
+          textBody.textcard.url = `${dbScope?.weibo?.user?.cover_image_phone}`;
+
+          readyToSend = 1;
+
+          log(account, `weibo user cover updated: ${user.cover_image_phone}`, 'success');
+        }
+
+        // If latest post is newer than the one in database
+        if (id !== dbScope?.weibo?.latestStatus?.id && timestamp > dbScope?.weibo?.latestStatus?.timestampUnix) {
+          textBody.textcard.title = `${msgPrefix} · 发布微博动态`;
+          textBody.textcard.description = `${retweeted_status ? `转发` : `动态`}：${text}${retweeted_status ? `\n\n@${retweeted_status.user.screen_name}：${stripHtml(retweeted_status.text)}` : ''}`;
+          textBody.textcard.url = `https://weibo.com/${user.id}/${id}`;
+
+          log(account, `weibo got update: ${id} (${timeAgo(timestamp)})`, 'success');
+
+          if ((currentTime - timestamp) >= config.weiboBotThrottle) {
+            log(account, `weibo too old, notifications skipped`);
+          } else {
+            readyToSend = 1;
+          }
+        } else if (id !== dbScope?.weibo?.latestStatus?.id && timestamp < dbScope?.weibo?.latestStatus?.timestampUnix) {
+          log(`weibo new post older than database. latest: ${id} (${timeAgo(timestamp)})`);
+        } else {
+          log(`weibo no update. latest: ${id} (${timeAgo(timestamp)})`);
+        }
+
+        if (readyToSend === 1) {
+          await sendWecom(userOptions, merge({agentid: config.wecom.agentid,}, textBody))
+          .then(resp => {
+            readyToSend = 0;
+          })
+          .catch(err => {
+            log(account, `Wecom post error: ${err?.response?.body || err}`, 'error');
+          });
+        }
+
+        // Set new data to database
+        dbScope['weibo'] = dbStore;
+      } else {
+        log(account, 'weibo empty result, skipping...', 'error');
       }
     } else {
-      log('weibo info corrupted, skipping...');
+      log(account, 'weibo info corrupted, skipping...', 'error');
     }
   })
   .catch(err => {
-    log(`weibo request error: ${err}`);
+    log(account, `weibo request error: ${err}`, 'error');
   });
 }
