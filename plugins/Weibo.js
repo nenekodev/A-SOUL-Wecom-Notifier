@@ -120,6 +120,8 @@ export async function fetchWeibo (account, config, dbScope, textBody){
           }
         };
 
+        let readyToSend = 0;
+
         // If user nickname update
         if (user.screen_name !== dbScope?.weibo?.user?.screen_name && dbScope?.weibo?.user?.screen_name) {
           textBody.textcard.title = `${msgPrefix} · 更新微博昵称`;
