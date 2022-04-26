@@ -93,14 +93,14 @@ export async function fetchWeibo (account, config, dbScope, textBody){
         let text = status?.raw_text || stripHtml(status.text);
 
         if (status?.isLongText) {
-          log('weibo got post too long, trying extended text...')
+          log(account, 'weibo got post too long, trying extended text...')
           await got(`https://m.weibo.cn/statuses/extend?id=${id}`, weiboRequestOptions).then(async resp => {
             const json = JSON.parse(resp.body);
 
             if (json?.ok === 1 && json?.data?.longTextContent) {
               text = stripHtml(json.data.longTextContent);
             } else {
-              log('weibo extended info corrupted, using original text...');
+              log(account, 'weibo extended info corrupted, using original text...');
             }
           });
         }
@@ -180,9 +180,9 @@ export async function fetchWeibo (account, config, dbScope, textBody){
             readyToSend = 1;
           }
         } else if (id !== dbScope?.weibo?.latestStatus?.id && timestamp < dbScope?.weibo?.latestStatus?.timestampUnix) {
-          log(`weibo new post older than database. latest: ${id} (${timeAgo(timestamp)})`);
+          log(account, `weibo new post older than database. latest: ${id} (${timeAgo(timestamp)})`);
         } else {
-          log(`weibo no update. latest: ${id} (${timeAgo(timestamp)})`);
+          log(account, `weibo no update. latest: ${id} (${timeAgo(timestamp)})`);
         }
 
         if (readyToSend === 1) {
