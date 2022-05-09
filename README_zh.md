@@ -1,4 +1,6 @@
-# A-SOUL-Wecom
+![](https://s1.ax1x.com/2022/05/09/OJcCIf.gif)
+
+# A-SOUL-Wecom-Notifier
 
 从各平台和服务中提取A-SOUL动态并将提醒推送至企业微信
 
