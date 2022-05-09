@@ -1,4 +1,6 @@
-# A-SOUL-Wecom
+![](https://s1.ax1x.com/2022/05/09/OJcCIf.gif)
+
+# A-SOUL-Wecom-Notifier
 
 Extract A-SOUL dynamics data from services and push updates to Wecom【企业微信】
 
