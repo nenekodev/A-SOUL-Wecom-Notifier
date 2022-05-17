@@ -33,6 +33,17 @@ export default {
   accounts: [
     {
       enabled: true,
+      slug: 'A-SOUL_Official',
+      showSlug: true,
+      biliId: '703007996',
+      biliLiveId: '22632157',
+      douyinId: 'MS4wLjABAAAAflgvVQ5O1K4RfgUu3k0A2erAZSK7RsdiqPAvxcObn93x2vk4SKk1eUb6l_D4MX-n',
+      douyinLiveId: '1962143378',
+      weiboId: '7519401668',
+      color: '#fc966e',
+    },
+    {
+      enabled: true,
       slug: '向晚',
       showSlug: true,
       biliId: '672346917',
@@ -80,17 +91,6 @@ export default {
       douyinId: 'MS4wLjABAAAAxCiIYlaaKaMz_J1QaIAmHGgc3bTerIpgTzZjm0na8w5t2KTPrCz4bm_5M5EMPy92',
       weiboId: '7524943648',
       color: '#576690',
-    },
-    {
-      enabled: true,
-      slug: 'A-SOUL_Official',
-      showSlug: true,
-      biliId: '703007996',
-      biliLiveId: '22632157',
-      douyinId: 'MS4wLjABAAAAflgvVQ5O1K4RfgUu3k0A2erAZSK7RsdiqPAvxcObn93x2vk4SKk1eUb6l_D4MX-n',
-      douyinLiveId: '1962143378',
-      weiboId: '7519401668',
-      color: '#fc966e',
     }
   ]
 }
